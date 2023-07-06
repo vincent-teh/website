@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('static', filename='css/style.css')}}">
+{% endblock %}
+
+{% block main %}
+
+<div class="container section-2">
+  <div class="row">
+    <div class="col-md-6" style="margin-bottom: 50px;">
+      <img src="{{ url_for('video_feed') }}" class="img-fluid  videos" alt="Real time streaming">
+      <h3 class="text-left video-title">Live Streaming</h2>
+        <p>Real time streaming from the Raspberry Pi camera</p>
+    </div>
+    <div class="col-md-6" style="margin-bottom: 20px;">
+      <img src="{{ url_for('plot_graph') }}" class="img-fluid videos" alt="Real time graph">
+      <h3 class="text-left video-title">Live Graph</h2>
+      <p>Real time plotting from the temperature sensor</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

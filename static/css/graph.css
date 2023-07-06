@@ -1,0 +1,9 @@
+.left-title {
+    text-transform: uppercase;
+}
+
+.video {
+    height: 300px;
+    object-fit: cover;
+    padding-bottom: 10px;
+}

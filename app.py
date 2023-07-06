@@ -1,10 +1,13 @@
-from flask import Flask, render_template, Response
 import cv2
+from flask import Flask, render_template, Response, request, jsonify
+from events import socketio, get_temp
+from config import live_video_url, graph_url, raspy_addr
 
+
+# Objects for enabling flask-socketio
 app = Flask(__name__)
+socketio.init_app(app)
 
-live_video_url = 0
-graph_url = 0
 
 def generate_frames(video_url):
     # Open the webcam
@@ -33,17 +36,25 @@ def generate_frames(video_url):
 
 @app.route('/')
 def index():
-    return render_template('base.html')
+    return render_template('index.html')
+
+@app.route('/stream')
+def stream():
+    return render_template('stream.html')
+
+@app.route('/graph')
+def graph():
+    return render_template('graph.html')
 
 @app.route('/live_cam')
 def video_feed():
     return Response(generate_frames(live_video_url), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route('/graph')
+@app.route('/plot_graph')
 def plot_graph():
     return Response(generate_frames(graph_url), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
+@app.route('/live_temp')
+def update_temp():
+    temp = get_temp()
+    return jsonify(temp=temp)

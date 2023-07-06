@@ -1,0 +1,26 @@
+.title {
+    font-weight: bold;
+    font-size: xxx-large;
+    padding: 20px;
+    text-transform: uppercase;
+}
+
+.video {
+    object-fit: cover;
+}
+
+.videos {
+    object-fit: cover;
+    height: 300px;
+    width: 100%;
+    padding-bottom: 10px;
+}
+
+.section-2 {
+    margin-top: 80px;
+}
+
+.video-title {
+    text-transform: uppercase;
+    font-weight: bold;
+}
