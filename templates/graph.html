@@ -3,6 +3,9 @@
 {% block css %}
 <link rel="stylesheet" type="text/css"
   href="{{ url_for('static', filename='css/graph.css')}}">
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script>
 {% endblock %}
 
 
@@ -10,37 +13,100 @@
 <div class="container">
   <div class="row">
     <div class="col-md-6">
+      <canvas id="chart"  height="200"></canvas>
       <img src="{{ url_for('plot_graph') }}" class="img-fluid video" alt="Real time graph">
       <h3 class="left-title">Real time plotting</h3>
     </div>
     <div class="col-md-6">
-      <h3>The new value is</h3>
-      <h1 id="number"></h1>
+      <table id="data-table">
+        <thead>
+          <tr>Power reading</tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
 <script>
-function update_temp() {
+function get_temp() {
+  var temp;
   $.ajax({
     url: '/live_temp',
     type: 'GET',
     datatype: 'json',
+    async: false,
     success: function(response) {
-      var number = response.temp;
-      $('#number').text(number);
+      temp = response.temp;
     },
     fail: function(error) {
       console.log('Error ', error);
     }
   });
+  return temp;
 };
+
+function update_temp() {
+  temp = get_temp();
+  var power = 0;
+  $('#data-table tbody').empty();
+  for (let key in temp) {
+    let line = $('<tr>');
+    line.append(temp[key] + '</tr>')
+    $('#data-table tbody').append(line);
+  }
+};
+
+const ctx = document.getElementById('chart');
+
+let xval =  Object.keys(get_temp());
+let yval =  Object.values(get_temp());
+var chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: xval,
+    datasets: [{
+      data: yval,
+      label: 'Real time temperature',
+      fill: false,
+      borderWidth: 1
+    }]
+  },
+  options: {
+    scales: {
+      xAxes: [{
+          ticks: {
+              min: 0,
+              max: 10
+          }
+      }],
+      yAxes: [{
+          ticks: {
+              min: 20,
+              max: 50
+          }
+      }]
+    }
+  }
+});
+
+function update_chart() {
+  chart.data.datasets.forEach((dataset) => {
+    dataset.data.shift()
+  });
+  chart.data.datasets.forEach((dataset) => {
+    dataset.data.push(Object.values(get_temp()).at(-1));
+  });
+  chart.update()
+};
+
 $(document).ready(function() {
+  var updateInterval = 1000;
   update_temp();
-  setInterval(update_temp, 1000);  // Update every 1 seconds
+  setInterval(update_temp, updateInterval);  // Update every 1 seconds
+  setInterval(update_chart, updateInterval);  // Update every 1 seconds
 });
 </script>
-
-
 
 {% endblock %}
