@@ -3,8 +3,8 @@
 {% block css %}
 <link rel="stylesheet" type="text/css"
   href="{{ url_for('static', filename='css/graph.css')}}">
-<script
-src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+  <script
+  src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
 </script>
 {% endblock %}
 
@@ -14,10 +14,11 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
   <div class="row">
     <div class="col-md-6">
       <canvas id="chart"  height="200"></canvas>
-      <img src="{{ url_for('plot_graph') }}" class="img-fluid video" alt="Real time graph">
       <h3 class="left-title">Real time plotting</h3>
     </div>
     <div class="col-md-6">
+      <canvas id="power-chart"  height="200"></canvas>
+      <canvas id="experiment-chart"  height="200"></canvas>
       <table id="data-table">
         <thead>
           <tr>Power reading</tr>
@@ -30,44 +31,42 @@ src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
 </div>
 
 <script>
-function get_temp() {
-  var temp;
+function get_response() {
+  var data;
   $.ajax({
     url: '/live_temp',
     type: 'GET',
     datatype: 'json',
     async: false,
     success: function(response) {
-      temp = response.temp;
+      data = response;
     },
     fail: function(error) {
       console.log('Error ', error);
     }
   });
-  return temp;
+  return data;
 };
 
 function update_temp() {
-  temp = get_temp();
+  _data = get_response();
   var power = 0;
   $('#data-table tbody').empty();
-  for (let key in temp) {
+  for (let key in _data.temp) {
     let line = $('<tr>');
-    line.append(temp[key] + '</tr>')
+    line.append(_data.temp[key] + '</tr>')
     $('#data-table tbody').append(line);
   }
 };
 
 const ctx = document.getElementById('chart');
 
-let xval =  Object.keys(get_temp());
-let yval =  Object.values(get_temp());
 var chart = new Chart(ctx, {
   type: 'line',
   data: {
-    labels: xval,
+    labels: Object.keys(get_response().temp),
     datasets: [{
-      data: yval,
+      data: Object.values(get_response().temp),
       label: 'Real time temperature',
       fill: false,
       borderWidth: 1
@@ -91,14 +90,76 @@ var chart = new Chart(ctx, {
   }
 });
 
+const doughnut_ctx = document.getElementById('power-chart');
+var pie_chart = new Chart(doughnut_ctx, {
+  type: 'doughnut',
+  data: {
+    labels: [
+      0, 'Power Usage',
+    ],
+    datasets: [{
+      label: 'My First Dataset',
+      data: [0, 100],
+      backgroundColor: [
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)'
+      ],
+      hoverOffset: 4
+    }]
+  },
+  options: {
+    animation: {
+      animateRotate: false,
+    },
+    tooltips: {enabled: false},
+    hover: {mode: null},
+  }
+});
+
+const ex_ctx = document.getElementById('experiment-chart');
+var ex_chart = new Chart(ex_ctx, {
+  type: 'doughnut',
+  data: {
+    labels: [
+      'Power Usage',
+    ],
+    datasets: [{
+      label: 'My First Dataset',
+      data: [100],
+      backgroundColor: [
+        'rgb(255, 99, 132)',
+        'rgb(54, 162, 235)'
+      ],
+      hoverOffset: 4
+    }]
+  },
+  options: {
+    animation: {
+      animateRotate: false,
+    },
+    circumference: 360,
+  }
+});
+
+
 function update_chart() {
   chart.data.datasets.forEach((dataset) => {
     dataset.data.shift()
   });
+  _data = get_response()
   chart.data.datasets.forEach((dataset) => {
-    dataset.data.push(Object.values(get_temp()).at(-1));
+    dataset.data.push(Object.values(_data.temp).at(-1));
   });
-  chart.update()
+  pie_chart.data.datasets.forEach((dataset) => {
+    dataset.data.shift();
+    dataset.data.shift();
+  });
+  pie_chart.data.datasets.forEach((dataset) => {
+    dataset.data.push(100 - Object.values(_data.temp).at(-1));
+    dataset.data.push(Object.values(_data.temp).at(-1));
+  });
+  chart.update();
+  pie_chart.update();
 };
 
 $(document).ready(function() {
@@ -107,6 +168,7 @@ $(document).ready(function() {
   setInterval(update_temp, updateInterval);  // Update every 1 seconds
   setInterval(update_chart, updateInterval);  // Update every 1 seconds
 });
+
 </script>
 
 {% endblock %}
