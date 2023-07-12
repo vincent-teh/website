@@ -1,14 +1,48 @@
 import cv2
-from flask import Flask, render_template, Response, request, jsonify
-from events import socketio, get_temp
-from config import live_video_url, graph_url, raspy_addr
+from flask import render_template, Response, request, jsonify
+from events import socketio, get_temp, get_power
+from config import live_video_url, graph_url, update_direction, topic
+from random import randint
+from extensions import app, mqtt_client
+from time import sleep
 
-
-# Objects for enabling flask-socketio
-app = Flask(__name__)
 socketio.init_app(app)
+mqtt_client.init_app(app)
 
 
+'''
+    MQTT publish is a blocking operation.
+    Looping through a publish event will the system failed to send system
+    level acknowledgement.
+    It is advisable to never put loop pulish here.
+'''
+@mqtt_client.on_connect()
+def handle_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected")
+    else:
+        print('Bad connection. Code:', rc)
+
+@mqtt_client.on_disconnect()
+def handle_disconnect():
+    print('Device disconnect')
+
+@mqtt_client.on_log()
+def handle_logging(client, userdata, level, buf):
+    print(level, buf)
+
+@mqtt_client.on_message()
+def handle_mqtt_message(client, userdata, message):
+    data = dict(
+        topic=message.topic,
+        payload=message.payload.decode()
+    )
+
+'''
+    Overload this function for performing image detection
+    The detection should also call update drection function before yeilding
+    the frames.
+'''
 def generate_frames(video_url):
     # Open the webcam
     cap = cv2.VideoCapture(video_url)  # Change the parameter to the appropriate camera index if needed
@@ -26,6 +60,8 @@ def generate_frames(video_url):
         if not ret:
             break
 
+        # Update the direction variable
+        update_direction(randint(0, 9))
         # Yield the output frame in the byte format
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
@@ -57,4 +93,5 @@ def plot_graph():
 @app.route('/live_temp')
 def update_temp():
     temp = get_temp()
-    return jsonify(temp=temp)
+    power = get_power()
+    return jsonify(temp=temp, power=power)
