@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('static', filename='css/style.css')}}">
+
+<!-- Styling and scripts for using graphing -->
+<link rel="stylesheet" type="text/css"
+  href="{{ url_for('static', filename='css/graph.css')}}">
+  <script
+  src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script>
+
+<!--  Dependency for socketio -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+{% endblock %}
+
+
+{% block main %}
+
+<div class="container section-2">
+  <div class="row">
+    <div class="col-md-6" style="margin-bottom: 50px;">
+      <!-- <img src="{{ url_for('main.video_feed') }}" class="img-fluid  videos" alt="Real time streaming"> -->
+      <img id="photo" class="img-fluid  videos" alt="Real time streaming">
+      <h3 class="text-left video-title">Live Streaming</h2>
+        <p>Real time streaming from the Raspberry Pi camera</p>
+    </div>
+    <div class="col-md-6" style="margin-bottom: 20px;">
+      <img src="{{ url_for('main.plot_graph') }}" class="img-fluid videos" alt="Real time graph">
+      <h3 class="text-left video-title">Live Graph</h2>
+      <p>Real time plotting from the temperature sensor</p>
+    </div>
+
+
+  </div>
+  <!-- Div for setting up the graphs -->
+  <div class="row" style="margin-bottom: 30px;">
+    <h3 class="left-title">Plant temperature</h3>
+    <canvas id="chart" height="90"></canvas>
+  </div>
+  <div class="row">
+    <div class="col-md-5" align="center">
+      <canvas id="power-chart" class="section-2-2" height="140"></canvas>
+      <p id="power-usage"></p>
+    </div>
+    <div class="col-md-7">
+      <canvas id="power-usage-line" height="130"></canvas>
+    </div>
+  </div>
+</div>
+
+<script src="{{url_for('static', filename='js/graph.js')}}"></script>
+<script src="{{url_for('static', filename='js/connection.js')}}"></script>
+{% endblock %}
