@@ -8,7 +8,7 @@ import time
 from website.raspy import Raspy
 
 main = Blueprint("main", __name__)
-raspy = Raspy()
+raspy = Raspy(live_video_url)
 
 '''
     Overload this function for performing image detection
@@ -56,7 +56,7 @@ def graph():
 
 @main.route('/live_cam')
 def video_feed():
-    return Response(generate_frames(live_video_url), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate_frames(0), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @main.route('/plot_graph')
 def plot_graph():

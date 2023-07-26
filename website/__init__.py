@@ -8,7 +8,7 @@ from time import sleep
 
 def publish_direction():
     while True:
-        mqtt_client.publish('DIRECTION', 1)
+        mqtt_client.publish('DIRECTION', raspy.get_direction())
         sleep(2)
 
 

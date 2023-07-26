@@ -24,6 +24,9 @@ class Raspy():
     def get_post_img(self) -> bytes:
         return self.image['post']
 
+    def get_direction(self):
+        return self._direction
+
     def detect_image(self):
         cap = cv2.VideoCapture(self._url)  # Change the parameter to the appropriate camera index if needed
         while self.thread['event'].is_set():

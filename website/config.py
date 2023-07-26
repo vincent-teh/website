@@ -1,7 +1,7 @@
 from threading import Lock
 import sys
 
-live_video_url = "slide7.mp4"
+live_video_url = "http://192.168.137.208:8080/stream/video.mjpeg"
 graph_url = 0
 raspy_addr = "192.168.137.11"
 topic = 'POWER'
