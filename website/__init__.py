@@ -1,6 +1,6 @@
 from flask import Flask
 from website.config import broker_url
-from website.mqtt_client import mqtt_client
+from website.mqtt_client import mqtt_client, temp
 from website.routes import main, raspy
 from website.events import socketio
 import threading
@@ -8,7 +8,10 @@ from time import sleep
 
 def publish_direction():
     while True:
-        mqtt_client.publish('DIRECTION', raspy.get_direction())
+        data = raspy.get_direction()
+        mqtt_client.publish('DIRECTION', data)
+        if data[0] == 'n':
+            temp.start_plant()
         sleep(2)
 
 

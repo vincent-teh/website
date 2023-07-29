@@ -8,11 +8,19 @@ class Temp():
         self._temp = temp
         self._power = power
         self._pid_prev_error = 0
+        self._is_start_plant = False
+
+    def start_plant(self):
+        self._is_start_plant = True
+
+    def stop_plant(self):
+        self._is_start_plant = False
 
     def get_temp(self):
         with self._lock_temp:
             return self._temp
 
+    # pu_temp methods will automatically updates the temperature and power value.
     def put_temp(self, temp):
         with self._lock_temp, self._lock_power:
             self._temp = temp
@@ -22,7 +30,9 @@ class Temp():
 
     def get_power(self):
         with self._lock_power:
-            return self._power
+            if self._is_start_plant:
+                return self._power
+            return 0
 
     def calc_power(self,
                    pid_prev_error,
